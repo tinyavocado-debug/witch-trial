@@ -41,13 +41,20 @@ socket.on('connect', () => {
   }
 });
 
+// Refused by the server (too many connections from this network); it won't retry on its own.
+socket.on('connect_error', (err) => {
+  if (socket.active) return;
+  joinError = err.message;
+  render();
+});
+
 socket.on('state', (view) => {
   if (view.removed) {
     lastSignature = '';
     joined = false;
     state = null;
     store.remove(sessionStorage, tokenKey(roomCode));
-    joinError = 'You were removed from the village.';
+    joinError = view.closed ? 'That village has closed. Ask the host for a new link.' : 'You were removed from the village.';
     return render();
   }
   state = view;
@@ -140,7 +147,7 @@ function joinScreen() {
     value: joinDraft.name, oninput: (e) => { joinDraft.name = e.target.value; },
   });
   const codeInput = el('input', {
-    id: 'codeInput', placeholder: 'Village code', maxlength: 4, autocomplete: 'off',
+    id: 'codeInput', placeholder: 'Village code', maxlength: 6, autocomplete: 'off',
     autocapitalize: 'characters', style: 'text-transform:uppercase',
     value: joinDraft.code, oninput: (e) => { joinDraft.code = e.target.value; },
   });

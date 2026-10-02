@@ -1,5 +1,5 @@
 // Fills the village with bots that play randomly, for solo testing.
-// Usage: npm run bots -- <village code> [count] [url]      e.g. npm run bots -- KXRP 5
+// Usage: npm run bots -- <village code> [count] [url]      e.g. npm run bots -- KXRPMW 5
 // Join from your own phone/browser too, then press "Begin" on the table screen.
 
 import { io } from 'socket.io-client';

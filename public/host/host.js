@@ -14,26 +14,37 @@ let lastPhaseKey = '';
 let room = null;
 try { room = JSON.parse(store.get(sessionStorage, ROOM_KEY)); } catch { /* corrupted entry */ }
 
-function loadJoinInfo(code) {
-  fetch(`/api/join-info?room=${code}`).then((r) => r.json()).then((info) => {
-    if (room?.code !== code) return;
-    joinInfo = info;
-    render();
-  });
-}
-
 socket.on('connect', () => {
   socket.emit('host:hello', { code: room?.code, key: room?.key }, (res) => {
     if (!res.ok) return $('stage').replaceChildren(el('p', { class: 'error' }, res.error));
     canControl = res.canControl;
-    if (room?.code !== res.code || !joinInfo) {
-      joinInfo = null;
-      loadJoinInfo(res.code);
-    }
+    if (room?.code !== res.code) joinInfo = null;
     room = { code: res.code, key: res.key };
     store.set(sessionStorage, ROOM_KEY, JSON.stringify(room));
     render();
   });
+});
+
+// The server closes a village that has gone an hour without a game in progress.
+socket.on('host:closed', ({ error }) => {
+  room = null;
+  state = null;
+  store.remove(sessionStorage, ROOM_KEY);
+  $('stage').replaceChildren(
+    el('p', { class: 'error' }, error),
+    el('button', { class: 'primary', onclick: () => location.reload() }, 'Open a new village'));
+});
+
+// Refused by the server (too many connections from this network); it won't retry on its own.
+socket.on('connect_error', (err) => {
+  if (!socket.active) $('stage').replaceChildren(el('p', { class: 'error' }, err.message));
+});
+
+// Sent after every host:hello, once the QR code is ready.
+socket.on('host:joinInfo', (info) => {
+  if (room?.code !== info.code) return;
+  joinInfo = info;
+  render();
 });
 
 socket.on('host:state', (s) => {
