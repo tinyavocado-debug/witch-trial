@@ -330,9 +330,8 @@ export class Game {
       mediumQuestion: () => this.actMediumQuestion(p),
       ghostAnswer: () => this.actGhostAnswer(p, action.answer),
     };
-    const handler = handlers[action.type];
-    if (!handler) return fail('Unknown action.');
-    const result = handler();
+    if (!Object.hasOwn(handlers, action?.type)) return fail('Unknown action.');
+    const result = handlers[action.type]();
     if (result.ok && this.phase === ph) this.maybeAutoAdvance();
     return result;
   }
@@ -356,6 +355,7 @@ export class Game {
     if (!p.alive) return fail('Ghosts cannot cast spells.');
     if (!this.availableSpells(p).includes(spell)) return fail('You cannot cast that spell.');
     const need = SPELLS[spell].targets;
+    if (!Array.isArray(targets)) return fail('Choose your targets.');
     targets = [...new Set(targets)];
     if (targets.length !== need) return fail(`Choose ${need} different player${need === 1 ? '' : 's'}.`);
     const people = targets.map((id) => this.player(id));
