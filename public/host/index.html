@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Witch Trial · Table</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕯️</text></svg>" />
+  <link rel="stylesheet" href="/shared/theme.css" />
+  <link rel="stylesheet" href="/host/host.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand display flicker">🕯️ Witch Trial</div>
+      <div class="progress" id="progress"></div>
+      <div class="phase-name display" id="phaseName"></div>
+    </header>
+    <main class="stage" id="stage"></main>
+    <aside class="village" id="village"></aside>
+    <footer class="controls" id="controls">
+      <span class="error" id="hostError"></span>
+      <button id="btnPause">Pause</button>
+      <button id="btnAdd">+30s</button>
+      <button id="btnSkip">Skip ▸</button>
+    </footer>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/host/host.js"></script>
+</body>
+</html>

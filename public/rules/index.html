@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#120b18" />
+  <title>Witch Trial · How to Play</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕯️</text></svg>" />
+  <link rel="stylesheet" href="/shared/theme.css" />
+  <style>
+    body { font-size: 17px; line-height: 1.5; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+    main { max-width: 560px; margin: 0 auto; padding: 24px 16px 56px; display: flex; flex-direction: column; gap: 16px; }
+    header { text-align: center; margin: 8px 0 8px; }
+    header .candle { font-size: 48px; }
+    header h1 { font-size: 36px; color: var(--accent); }
+    .panel h2 { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
+    .panel h2 .num { color: var(--muted); margin-right: 6px; }
+    p, li { margin: 0 0 8px; }
+    ul { padding-left: 20px; margin: 0; }
+    .panel > :last-child { margin-bottom: 0; }
+    .muted { font-size: 15px; }
+    .role { margin-bottom: 8px; }
+    .role strong, .sides strong { color: var(--accent); }
+    .ghostly { color: var(--ghost); }
+    .back { text-align: center; margin-top: 8px; }
+    .back a { color: var(--accent); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="candle">🕯️</div>
+    <h1>How to Play</h1>
+    <p class="muted" style="font-style:italic">Hear ye, villagers. Read closely, for the Witch surely will.</p>
+  </header>
+
+  <section class="panel">
+    <h2><span class="num">1</span>Goal</h2>
+    <p>A Witch has crept into the village. The village must unmask and condemn her before the Final Trial is over.</p>
+    <p>But not everyone touched by magic serves the Witch. A Werewolf has their own agenda, a Medium speaks with the dead, and some players hold powerful gifts of sight.</p>
+    <p>Cast spells to gather clues, then choose what to reveal, bluff about what you know, and work out who can truly be trusted.</p>
+    <p class="sides"><strong>The Village:</strong> condemn the Witch at any trial.<br><strong>The Witch's coven</strong> (the Witch and her Familiar): keep her hidden until the very end.<br><strong>The Werewolf:</strong> see the Witch Hunter condemned while never being condemned yourself.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="num">2</span>Roles</h2>
+    <p class="role"><strong>Witch:</strong> escape every trial. Your Curse can twist a victim's clue into a lie.</p>
+    <p class="role"><strong>Familiar:</strong> you know the Witch's true face. Shield her by any means.</p>
+    <p class="role"><strong>Witch Hunter:</strong> sworn to the village. Once per game, cast a sight no Curse can cloud.</p>
+    <p class="role"><strong>Medium:</strong> sworn to the village. You speak with the dead and may glimpse the Witch in a Vision.</p>
+    <p class="role"><strong>Villager:</strong> sworn to the village. No magic gift, only your wits.</p>
+    <p class="role"><strong>Werewolf:</strong> you howl for no one. You win if Witch Hunter is condemned <em>and</em> you roam free.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="num">3</span>Spells</h2>
+    <p>Each round, cast <strong>one</strong> spell from your phone.</p>
+    <ul>
+      <li><strong>🔮 Scry:</strong> peer into another player's soul for a clue.</li>
+      <li><strong>🪄 Curse:</strong> cloud whatever another player learns this round.</li>
+      <li><strong>✨ True Scry</strong> <span class="muted">(Witch Hunter only)</span>: a clue no Curse can touch.</li>
+      <li><strong>👁️ Vision</strong> <span class="muted">(Medium only)</span>: a glimpse of who the Witch might be.</li>
+    </ul>
+    <p class="muted" style="margin-top:8px">Any clue may be cursed, so trust no single omen.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="num">4</span>Game timeline</h2>
+    <ul>
+      <li><strong>The Drawing of Roles:</strong> secretly learn who you are.</li>
+      <li><strong>Round 1:</strong> cast spells, then argue your case.</li>
+      <li><strong>First Trial:</strong> the village condemns one soul. They become a <span class="ghostly">Ghost</span>, and their role stays secret.</li>
+      <li><strong>Round 2:</strong> cast spells, then argue.</li>
+      <li><strong>Séance:</strong> the Ghost whispers one message of up to 8 words.</li>
+      <li><strong>Second Trial:</strong> another soul is condemned and becomes a second Ghost.</li>
+      <li><strong>Round 3:</strong> the last spells are cast. Argue once more.</li>
+      <li><strong>Second Séance:</strong> both Ghosts whisper from beyond.</li>
+      <li><strong>Final Trial:</strong> the three most suspected plead their case, then all cast their vote.</li>
+      <li><strong>The Reveal:</strong> every mask falls away, and the winners are known.</li>
+    </ul>
+    <p class="muted" style="margin-top:8px"><span class="ghostly">Ghosts</span> may not speak aloud or vote, but they can see every clue the living receive.</p>
+  </section>
+
+  <p class="back"><a href="/play/">← Return to the village</a></p>
+</main>
+</body>
+</html>

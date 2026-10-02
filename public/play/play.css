@@ -1,0 +1,110 @@
+body {
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.bar-title { font-size: 21px; color: var(--accent); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-timer { font-family: var(--display); font-size: 26px; font-variant-numeric: tabular-nums; }
+.bar-timer.low { color: var(--accent); }
+
+.screen { display: flex; flex-direction: column; gap: 16px; padding: 16px; max-width: 560px; margin: 0 auto; }
+
+h2 { font-size: 28px; }
+h3 { font-size: 20px; color: var(--muted); }
+p { margin: 0; }
+
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid button, .stack button { width: 100%; }
+
+.center { text-align: center; }
+
+.ghost-banner {
+  padding: 10px 14px; border-radius: 12px;
+  background: #1a2233; border: 1px solid #2c3d57; color: var(--ghost); font-size: 15px;
+}
+
+.role-card {
+  position: relative;
+  min-height: 190px;
+  border-radius: 20px;
+  padding: 22px;
+  background: linear-gradient(160deg, #3a2548, #1d1328);
+  border: 1px solid #5a3f70;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+.role-card .label { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.role-card .role-name { font-family: var(--display); font-size: 44px; color: var(--accent); margin: 6px 0 10px; }
+.role-card .goal { font-weight: 600; margin-bottom: 8px; }
+.role-card .ability { color: var(--muted); font-size: 15px; }
+.role-card .secret { margin-top: 12px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,.3); color: var(--text); }
+.role-card.concealed { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.role-card.concealed .sigil { font-size: 56px; }
+
+.spell {
+  display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 2px;
+}
+.spell .name { font-weight: 700; font-size: 18px; }
+.spell .desc { font-size: 14px; color: var(--muted); }
+.spell.special { border-color: var(--accent); }
+
+.player-btn { font-size: 18px; }
+.player-btn.ghostly { color: var(--ghost); }
+
+.clue {
+  padding: 14px 16px; border-radius: 14px;
+  background: var(--panel); border-left: 4px solid var(--accent);
+  font-family: var(--display); font-size: 20px; line-height: 1.35;
+}
+.clue.trueScry { border-left-color: var(--good); }
+.clue.vision { border-left-color: #b98ce0; }
+.clue.curse { border-left-color: var(--accent-2); }
+.clue.none { border-left-color: var(--line); font-family: var(--body); font-size: 16px; color: var(--muted); }
+.clue .round { display: block; font-family: var(--body); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+
+.ghost-msg {
+  font-family: var(--display); font-style: italic; font-size: 26px; color: var(--ghost);
+  text-align: center; padding: 18px; border-radius: 16px; background: #141c2a; border: 1px solid #2c3d57;
+}
+
+.done-box {
+  padding: 16px; border-radius: 14px; background: #1f2a22; border: 1px solid #355a41; color: var(--good);
+}
+
+.word-count { font-size: 14px; color: var(--muted); text-align: right; }
+.word-count.over { color: var(--bad); }
+
+.answer-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+.result-big { font-family: var(--display); font-size: 48px; text-align: center; }
+.result-big.won { color: var(--good); }
+.result-big.lost { color: var(--bad); }
+
+.roster { display: flex; flex-direction: column; gap: 6px; }
+.roster .row { display: flex; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--panel); }
+.roster .row.won { border-left: 3px solid var(--good); }
+.roster .row.lost { border-left: 3px solid var(--bad); }
+.roster .r { color: var(--accent); font-family: var(--display); font-size: 18px; }
+
+details.inbox summary { cursor: pointer; color: var(--muted); padding: 6px 0; }
+details.inbox .stack { margin-top: 8px; }
+
+.toast {
+  position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
+  padding: 14px 16px; border-radius: 12px; background: var(--bad); color: white; text-align: center; z-index: 10;
+}
+
+.rules-link { display: block; text-align: center; color: var(--accent); padding: 8px 0; }

@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #120b18;
+  --bg-2: #1c1224;
+  --panel: #241830;
+  --panel-2: #2e2040;
+  --line: #3f2d52;
+  --text: #efe6d6;
+  --muted: #a898b4;
+  --accent: #e8a948; /* candle flame */
+  --accent-2: #b7532f;
+  --good: #6fbf8e;
+  --bad: #d9534f;
+  --ghost: #9fc3e6;
+  --radius: 16px;
+  --display: 'IM Fell English', Georgia, 'Times New Roman', serif;
+  --body: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #2a1838 0%, var(--bg) 60%) fixed, var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+h1, h2, h3, .display { font-family: var(--display); font-weight: 400; letter-spacing: 0.01em; margin: 0; }
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-height: 48px;
+  transition: transform 0.06s ease, background 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+button:active { transform: scale(0.98); }
+button:disabled { opacity: 0.45; cursor: default; transform: none; }
+button.primary { background: var(--accent); color: #1a1024; border-color: var(--accent); font-weight: 700; }
+button.selected { border-color: var(--accent); background: #3a2a22; box-shadow: 0 0 0 2px var(--accent) inset; }
+button.ghost-btn { background: transparent; }
+
+input, textarea {
+  font: inherit;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 18px; /* ≥16px prevents iOS zoom */
+}
+input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.panel {
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.muted { color: var(--muted); }
+.error { color: var(--bad); min-height: 1.3em; }
+.hidden { display: none !important; }
+
+.flicker { animation: flicker 3.5s infinite; }
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.92; }
+  50% { opacity: 0.75; }
+  55% { opacity: 0.95; }
+}
+
+.fade-in { animation: fade-in 0.4s ease both; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
