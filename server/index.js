@@ -23,6 +23,9 @@ const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O, which read as 1 a
 const CODE_LENGTH = 6; // 24^6 ≈ 191 million codes, so live villages can't be found by guessing
 const WRONG_CODE_LIMIT = 20; // wrong village codes one network may try per minute
 const NEW_SEAT_LIMIT = 20; // new players one network may add per minute: a full table on one Wi-Fi, plus retries
+const EVENTS_PER_SECOND = 5; // requests one socket may send, far more than anyone taps...
+const EVENT_BURST = 10; // ...with room for a quick burst, like a reconnect followed by a vote
+const BROADCAST_GAP_MS = 100; // a room sends its state at most this often, however many changes arrive
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -157,6 +160,7 @@ function closeRoom(room, reason) {
     for (const s of sockets) s.emit('state', { removed: true, closed: true });
   }
   room.socketsByPlayer.clear();
+  clearTimeout(room.broadcastTimer);
 }
 
 function hasConnections(room) {
@@ -165,7 +169,27 @@ function hasConnections(room) {
   return false;
 }
 
+// Each broadcast renders a view for every phone in the room, so sending one per change would let a
+// player who repeats an action thousands of times a second (from many sockets) tie up the server.
+// A change goes out right away unless the room just broadcast; then it waits for the gap, and
+// changes arriving in the meantime go out together.
 function broadcast(room) {
+  if (room.closed || room.broadcastTimer) return;
+  const wait = (room.lastBroadcast ?? 0) + BROADCAST_GAP_MS - Date.now();
+  if (wait <= 0) return sendState(room);
+  room.broadcastTimer = setTimeout(() => {
+    room.broadcastTimer = null;
+    // A timer callback has no guard around it, so an error here would take down the process.
+    try {
+      if (!room.closed) sendState(room);
+    } catch (err) {
+      console.error(`Error broadcasting village ${room.code}:`, err);
+    }
+  }, wait);
+}
+
+function sendState(room) {
+  room.lastBroadcast = Date.now();
   const { game, socketsByPlayer } = room;
   for (const p of game.players) p.connected = (socketsByPlayer.get(p.id)?.size ?? 0) > 0;
   io.to(hostChannel(room)).emit('host:state', game.publicView());
@@ -231,6 +255,22 @@ function guard(event, handler) {
   };
 }
 
+// Refills at `perSecond` up to `burst`; take() spends one and says whether there was one to spend.
+function tokenBucket(perSecond, burst) {
+  let tokens = burst;
+  let last = Date.now();
+  return {
+    take() {
+      const now = Date.now();
+      tokens = Math.min(burst, tokens + ((now - last) / 1000) * perSecond);
+      last = now;
+      if (tokens < 1) return false;
+      tokens--;
+      return true;
+    },
+  };
+}
+
 // ---------- sockets ----------
 
 io.use((socket, next) => {
@@ -244,6 +284,15 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   const { client } = socket.data;
   connectionsByClient.set(client, (connectionsByClient.get(client) ?? 0) + 1);
+
+  // Every request costs work (and most cause a broadcast), so each socket gets a steady allowance.
+  // Requests past it are refused before they reach a listener.
+  const requests = tokenBucket(EVENTS_PER_SECOND, EVENT_BURST);
+  socket.use(([, ...args], next) => {
+    if (requests.take()) return next();
+    const ack = args.at(-1);
+    if (typeof ack === 'function') ack({ ok: false, error: 'Too many requests. Slow down a little.' });
+  });
 
   // A socket is either a table screen or a player, never both. Each mode tracks its own
   // room so host authority can't carry over to a village the socket later joins as a player.
