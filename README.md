@@ -110,17 +110,39 @@ The village code is shown on the table screen. To send bots to a deployed server
 Each browser **tab** counts as a separate player, so you can also test by opening several tabs of `/play`.
 
 ### Layout
-- `server/engine/`: the game logic, with no networking code.
-  - `game.js`: the phase state machine and the per-player and public views.
-  - `roles.js`: roles and their traits.
-  - `clues.js`: Scry clue templates, both truthful and forged.
-  - `spells.js`: resolves each round (Curse → Scry / True Scry / Vision → Curse readings).
-  - `readings.js`: what each role learns from casting a Curse.
-  - `vision.js`: the Medium's hints.
-  - `outcome.js`: win conditions.
-- `server/index.js`: Express and Socket.IO, plus the villages (rooms), host keys, and idle cleanup. Each phone receives only its own view, so roles never leak before the reveal.
-- `public/host/`: the table screen.
-- `public/play/`: the phone client.
-- `public/rules/`: the player-facing How to Play page.
-- `public/shared/`: the theme and shared helpers.
-- `scripts/bots.js`: random bots for testing.
+witch-trial/
+│
+├── public/
+│   │
+│   ├── host/
+│   │   ├── index.html     ← shell for shared screen
+│   │   ├── host.js        ← render shared screen
+│   │   └── host.css       ← appearance
+│   │
+│   ├── play/
+│   │   ├── index.html     ← shell for phones
+│   │   ├── play.js        ← render/interact on phones
+│   │   └── play.css
+│   │
+│   ├── shared/            ← browser helpers/theme
+│   └── rules/             ← game instructions
+│
+├── server/
+│   │
+│   ├── index.js           ← HTTP + Socket.IO + rooms
+│   │
+│   └── engine/
+│       ├── game.js        ← main referee/state machine
+│       ├── roles.js       ← who everyone is
+│       ├── spells.js      ← spell-round resolution
+│       ├── clues.js       ← clue generation
+│       ├── readings.js    ← curse/readout logic
+│       ├── vision.js      ← Medium's Vision
+│       ├── outcome.js     ← victory calculation
+│       └── util.js        ← generic helpers
+│
+├── test/                  ← engine/server tests
+├── scripts/
+│   └── bots.js            ← automated players/testing
+│
+└── package.json           ← dependencies + commands
