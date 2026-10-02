@@ -1,15 +1,15 @@
-import { el, FINAL_TRIAL, formatTime, phaseTitle, remainingMs, syncClock } from '/shared/common.js';
+import { el, FINAL_TRIAL, formatTime, phaseTitle, remainingMs, store, syncClock } from '/shared/common.js';
 
 const socket = io();
 const $ = (id) => document.getElementById(id);
-const TOKEN_KEY = 'witch-trial-token';
+const ROOM_KEY = 'witch-trial-room';
 const NAME_KEY = 'witch-trial-name';
+const tokenKey = (code) => `witch-trial-token:${code}`;
 
-const store = {
-  get(storage, key) { try { return storage.getItem(key); } catch { return null; } },
-  set(storage, key, value) { try { storage.setItem(key, value); } catch { /* private mode */ } },
-  remove(storage, key) { try { storage.removeItem(key); } catch { /* private mode */ } },
-};
+// The village code comes from the join link, or from this tab's earlier visit (e.g. back from the rules page).
+let roomCode = (new URLSearchParams(location.search).get('room') ?? '').trim().toUpperCase()
+  || store.get(sessionStorage, ROOM_KEY) || '';
+if (roomCode) store.set(sessionStorage, ROOM_KEY, roomCode);
 
 let state = null; // latest player view from the server
 let joined = false;
@@ -26,11 +26,14 @@ const openPanels = new Set(); // which <details> panels the player has expanded
 // ---------- connection ----------
 
 socket.on('connect', () => {
-  const token = store.get(sessionStorage, TOKEN_KEY);
+  const token = roomCode && store.get(sessionStorage, tokenKey(roomCode));
   if (token) {
-    socket.emit('player:join', { token }, (res) => {
+    socket.emit('player:join', { room: roomCode, token }, (res) => {
       if (res.ok) joined = true;
-      else store.remove(sessionStorage, TOKEN_KEY);
+      else {
+        store.remove(sessionStorage, tokenKey(roomCode));
+        if (res.noRoom) joinError = 'That village has closed. Ask the host for a new link.';
+      }
       render();
     });
   } else {
@@ -43,7 +46,7 @@ socket.on('state', (view) => {
     lastSignature = '';
     joined = false;
     state = null;
-    store.remove(sessionStorage, TOKEN_KEY);
+    store.remove(sessionStorage, tokenKey(roomCode));
     joinError = 'You were removed from the village.';
     return render();
   }
@@ -128,32 +131,44 @@ function render() {
   restoreFocus();
 }
 
+// What the player has typed on the join screen, so a failed join doesn't clear it.
+const joinDraft = { name: store.get(localStorage, NAME_KEY) ?? '', code: roomCode };
+
 function joinScreen() {
   const input = el('input', {
     id: 'nameInput', placeholder: 'Your name', maxlength: 16, autocomplete: 'off',
-    value: store.get(localStorage, NAME_KEY) ?? '',
+    value: joinDraft.name, oninput: (e) => { joinDraft.name = e.target.value; },
+  });
+  const codeInput = el('input', {
+    id: 'codeInput', placeholder: 'Village code', maxlength: 4, autocomplete: 'off',
+    autocapitalize: 'characters', style: 'text-transform:uppercase',
+    value: joinDraft.code, oninput: (e) => { joinDraft.code = e.target.value; },
   });
   const submit = () => {
     const name = input.value.trim();
-    socket.emit('player:join', { name }, (res) => {
+    socket.emit('player:join', { room: codeInput.value, name }, (res) => {
       if (res.ok) {
         joined = true;
         joinError = '';
-        store.set(sessionStorage, TOKEN_KEY, res.token);
+        roomCode = res.code;
+        store.set(sessionStorage, ROOM_KEY, roomCode);
+        store.set(sessionStorage, tokenKey(roomCode), res.token);
         store.set(localStorage, NAME_KEY, name);
+        history.replaceState(null, '', `/play/?room=${roomCode}`);
       } else {
         joinError = res.error;
       }
       render();
     });
   };
-  input.addEventListener('keydown', (e) => e.key === 'Enter' && submit());
+  for (const field of [input, codeInput]) field.addEventListener('keydown', (e) => e.key === 'Enter' && submit());
   return [
     el('div', { class: 'center', style: 'margin-top:8vh' },
       el('div', { style: 'font-size:64px' }, '🕯️'),
       el('h2', { class: 'flicker' }, 'Witch Trial')),
     el('p', { class: 'muted center' }, 'Something supernatural has infiltrated the village.'),
     input,
+    codeInput,
     el('button', { class: 'primary', onclick: submit }, 'Enter the village'),
     el('p', { class: 'error' }, joinError),
     rulesLink('First time? Read how to play'),

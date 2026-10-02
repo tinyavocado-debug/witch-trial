@@ -1,11 +1,16 @@
 // Fills the village with bots that play randomly, for solo testing.
-// Usage: npm run bots -- [count] [url]      e.g. npm run bots -- 5
-// Join from your own phone/browser too, then press "Begin" on the laptop screen.
+// Usage: npm run bots -- <village code> [count] [url]      e.g. npm run bots -- KXRP 5
+// Join from your own phone/browser too, then press "Begin" on the table screen.
 
 import { io } from 'socket.io-client';
 
-const count = Number(process.argv[2]) || 5;
-const url = process.argv[3] || 'http://localhost:3000';
+const room = process.argv[2];
+const count = Number(process.argv[3]) || 5;
+const url = process.argv[4] || 'http://localhost:3000';
+if (!room) {
+  console.log('Usage: npm run bots -- <village code> [count] [url]   (the code is on the table screen)');
+  process.exit(1);
+}
 const NAMES = ['Agatha', 'Barnaby', 'Cordelia', 'Dorian', 'Esme', 'Fitz', 'Gwendolyn', 'Hollis', 'Isolde', 'Jasper', 'Keziah'];
 const GHOST_LINES = ['The quiet one counts the votes.', 'Two monsters argued, but only one lied.', 'Trust the second clue, not the first.'];
 
@@ -23,7 +28,7 @@ function startBot(name) {
   });
 
   socket.on('connect', () => {
-    socket.emit('player:join', { name, token }, (res) => {
+    socket.emit('player:join', { room, name, token }, (res) => {
       if (!res.ok) return console.log(`[${name}] could not join: ${res.error}`);
       token = res.token;
     });
@@ -68,5 +73,5 @@ function startBot(name) {
   });
 }
 
-console.log(`Sending ${count} bots to ${url}`);
+console.log(`Sending ${count} bots to village ${room.toUpperCase()} at ${url}`);
 NAMES.slice(0, count).forEach((name, i) => setTimeout(() => startBot(name), i * 150));

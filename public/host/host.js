@@ -1,21 +1,37 @@
-import { el, FINAL_TRIAL, formatTime, phaseHint, phaseTitle, remainingMs, syncClock } from '/shared/common.js';
+import { el, FINAL_TRIAL, formatTime, phaseHint, phaseTitle, remainingMs, store, syncClock } from '/shared/common.js';
 
 const socket = io();
 const $ = (id) => document.getElementById(id);
+const ROOM_KEY = 'witch-trial-host-room';
 
 let state = null;
 let joinInfo = null;
 let canControl = true;
 let lastPhaseKey = '';
 
-fetch('/api/join-info').then((r) => r.json()).then((info) => {
-  joinInfo = info;
-  render();
-});
+// { code, key } of the room this screen runs. Kept in the tab (never in the URL, which may be
+// screenshared) so a refresh returns to the same village.
+let room = null;
+try { room = JSON.parse(store.get(sessionStorage, ROOM_KEY)); } catch { /* corrupted entry */ }
+
+function loadJoinInfo(code) {
+  fetch(`/api/join-info?room=${code}`).then((r) => r.json()).then((info) => {
+    if (room?.code !== code) return;
+    joinInfo = info;
+    render();
+  });
+}
 
 socket.on('connect', () => {
-  socket.emit('host:hello', (res) => {
+  socket.emit('host:hello', { code: room?.code, key: room?.key }, (res) => {
+    if (!res.ok) return $('stage').replaceChildren(el('p', { class: 'error' }, res.error));
     canControl = res.canControl;
+    if (room?.code !== res.code || !joinInfo) {
+      joinInfo = null;
+      loadJoinInfo(res.code);
+    }
+    room = { code: res.code, key: res.key };
+    store.set(sessionStorage, ROOM_KEY, JSON.stringify(room));
     render();
   });
 });
@@ -59,6 +75,7 @@ function render() {
   const { phase } = state;
 
   $('phaseName').textContent = phase.type === 'lobby' ? '' : phaseTitle(phase);
+  $('roomCode').textContent = room ? `Village ${room.code}` : '';
   renderProgress();
   renderVillage();
   renderControls();
@@ -134,6 +151,14 @@ function tallyNode(tally) {
         el('span', {}, t.count))));
 }
 
+// The clipboard is only available over HTTPS or on localhost, so the button hides elsewhere.
+function copyLinkButton() {
+  if (!joinInfo || !canControl || !navigator.clipboard) return null;
+  return el('button', {
+    onclick: (e) => navigator.clipboard.writeText(joinInfo.url).then(() => { e.target.textContent = 'Copied ✓'; }),
+  }, 'Copy link');
+}
+
 // Messages from the most recent Séance.
 function latestGhostMessages() {
   const last = state.ghostMessages.at(-1)?.seance;
@@ -148,11 +173,12 @@ const screens = {
         joinInfo ? el('img', { class: 'qr', src: joinInfo.qr, alt: 'Scan to join' }) : el('div'),
         el('div', { class: 'stack' },
           el('h1', { class: 'title' }, 'Gather the village'),
-          el('p', { class: 'steps' },
-            '1. Join the same Wi-Fi as this laptop', el('br'),
-            '2. Scan the code, or open:'),
+          el('p', { class: 'steps' }, 'Scan the code, or open this link on your phone:'),
           el('div', { class: 'url' }, joinInfo?.url ?? '…'),
-          el('p', { class: 'muted' }, `${state.minPlayers}–${state.maxPlayers} players. The person at this laptop should join on their phone too.`),
+          copyLinkButton(),
+          el('p', { class: 'muted' }, 'On a video call? Paste the link into the chat. ',
+            'Village code: ', el('strong', { class: 'code' }, room?.code ?? '')),
+          el('p', { class: 'muted' }, `${state.minPlayers}–${state.maxPlayers} players. Whoever is running this screen should join on their phone too.`),
           el('p', { class: 'muted' }, 'New players: the rules are on the join screen, under “How to play”.'),
           canControl
             ? el('button', {

@@ -1,24 +1,46 @@
 # 🕯️ Witch Trial
 
-A ~25-minute social-deduction party game for 5–12 players. Everyone plays on their own phone, and one laptop acts as the shared table screen (timer, Ghost messages, verdicts, reveal).
+A ~25-minute social-deduction party game for 5–12 players. Everyone plays on their own phone, and one person runs the shared **table screen** (timer, Ghost messages, verdicts, reveal), either on a laptop or TV in the room or screenshared on a video call.
 
 ## Running a game
+
+1. The host opens **`/host`** on the deployed site (or **http://localhost:3000/host** when running locally). This creates a new village with a four-letter code, such as `KXRP`.
+2. Put that screen where everyone can see it, or share it on the video call.
+3. Players open the join link shown on the screen: scan the QR code in person, or paste the link into the call's chat. They can also go to `/play` and type the village code.
+4. The host joins on their own phone too, because the table screen is public.
+5. Press **Begin the game** once 5 or more players have joined.
+
+First-time players can read the rules at **/rules**. The phone join screen and lobby link to it.
+
+The table screen has **Pause**, **+30s**, and **Skip** controls. Only the browser tab that created the village can use them, so players can't skip phases from their phones. Refreshing that tab keeps the same village, but opening `/host` in a new tab starts a new one.
+
+If a phone refreshes or loses its connection, reopening the page in the same browser tab rejoins that player automatically. A village is deleted 10 minutes after everyone (table screen and phones) has disconnected.
+
+Several groups can play at once; each table screen runs its own village.
+
+## Running locally
 
 ```bash
 npm install
 npm start
 ```
 
-1. On the laptop, open **http://localhost:3000/host** and put it where everyone can see it.
-2. Everyone joins **the same Wi-Fi** as the laptop, then scans the QR code (or types the URL shown, e.g. `http://192.168.x.x:3000/play`).
-3. The person at the laptop joins on their own phone too, because the laptop screen is public.
-4. Press **Begin the game** once 5 or more players have joined.
+Open http://localhost:3000/host. Phones on the same Wi-Fi can join using the link the table screen shows (e.g. `http://192.168.x.x:3000/play/?room=KXRP`).
 
-First-time players can read the rules at **/rules** (for example `http://192.168.x.x:3000/rules`). The phone join screen and lobby link to it.
+## Deploying to Render
 
-The laptop has **Pause**, **+30s**, and **Skip** controls. These controls work only on the laptop running the server, so players can't skip phases from their phones. Set `HOST_ANYWHERE=1` to allow control from other devices.
+1. Push this repository to GitHub.
+2. In Render, create a **Web Service** from the repository with:
+   - Build command: `npm install`
+   - Start command: `npm start`
+   - Instance type: **Free**
+3. Once it's live, open `https://<your-service>.onrender.com/host`.
 
-If a phone refreshes or drops off the Wi-Fi, reopening the page in the same browser tab rejoins that player automatically.
+The server reads Render's `PORT` and `RENDER_EXTERNAL_URL` automatically, so join links and QR codes use the public address. To use a custom domain, set `PUBLIC_URL` (e.g. `https://witchtrial.example.com`).
+
+Things to know about the free tier:
+- The server sleeps after about 15 minutes without visitors, so the first visit afterwards can take up to a minute. Open the table screen a minute before you start.
+- Games live only in the server's memory. A redeploy or restart ends every game in progress, so don't push changes while people are playing.
 
 ## Game flow
 
@@ -72,8 +94,10 @@ Timed phases also advance as soon as everyone has acted. Durations live in `DEFA
 ```bash
 npm test            # engine tests (roles, clue truthfulness, curses and their readings, ties, win conditions, full game)
 npm run dev         # server with every timer shortened to 1/6
-npm run bots -- 5   # fill the lobby with 5 bots that play randomly (join from your own browser too)
+npm run bots -- KXRP 5   # fill village KXRP with 5 bots that play randomly (join from your own browser too)
 ```
+
+The village code is shown on the table screen. To send bots to a deployed server, add its URL: `npm run bots -- KXRP 5 https://<your-service>.onrender.com`.
 
 Each browser **tab** counts as a separate player, so you can also test by opening several tabs of `/play`.
 
@@ -86,8 +110,8 @@ Each browser **tab** counts as a separate player, so you can also test by openin
   - `readings.js`: what each role learns from casting a Curse.
   - `vision.js`: the Medium's hints.
   - `outcome.js`: win conditions.
-- `server/index.js`: Express and Socket.IO. Each phone receives only its own view, so roles never leak before the reveal.
-- `public/host/`: the laptop screen.
+- `server/index.js`: Express and Socket.IO, plus the villages (rooms), host keys, and idle cleanup. Each phone receives only its own view, so roles never leak before the reveal.
+- `public/host/`: the table screen.
 - `public/play/`: the phone client.
 - `public/rules/`: the player-facing How to Play page.
 - `public/shared/`: the theme and shared helpers.

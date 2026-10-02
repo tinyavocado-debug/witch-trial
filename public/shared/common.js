@@ -1,4 +1,4 @@
-// Helpers shared by the laptop screen and the phone client.
+// Helpers shared by the table screen and the phone client.
 
 export const TRIAL_NAMES = { 1: 'First', 2: 'Second', 3: 'Final' };
 export const FINAL_TRIAL = 3;
@@ -22,7 +22,7 @@ export function phaseTitle(phase) {
   }
 }
 
-// Instructions shown on the shared laptop screen.
+// Instructions shown on the shared table screen.
 export function phaseHint(phase) {
   switch (phase.type) {
     case 'roles': return 'Read your role in secret. Tap “Ready” when you have memorised it.';
@@ -42,6 +42,13 @@ export function phaseHint(phase) {
     default: return '';
   }
 }
+
+// Browser storage that quietly does nothing when blocked (e.g. private mode).
+export const store = {
+  get(storage, key) { try { return storage.getItem(key); } catch { return null; } },
+  set(storage, key, value) { try { storage.setItem(key, value); } catch { /* private mode */ } },
+  remove(storage, key) { try { storage.removeItem(key); } catch { /* private mode */ } },
+};
 
 // Tracks clock skew between this device and the server so countdowns agree across phones.
 let offset = 0;
