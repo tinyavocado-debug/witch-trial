@@ -110,6 +110,7 @@ The village code is shown on the table screen. To send bots to a deployed server
 Each browser **tab** counts as a separate player, so you can also test by opening several tabs of `/play`.
 
 ### Layout
+```bash
 witch-trial/
 │
 ├── public/
@@ -146,3 +147,4 @@ witch-trial/
 │   └── bots.js            ← automated players/testing
 │
 └── package.json           ← dependencies + commands
+```
