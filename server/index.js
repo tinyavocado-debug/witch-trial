@@ -22,6 +22,7 @@ const TABLE_IDLE_MS = 60 * 60 * 1000; // a room with no game in progress for an 
 const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O, which read as 1 and 0
 const CODE_LENGTH = 6; // 24^6 ≈ 191 million codes, so live villages can't be found by guessing
 const WRONG_CODE_LIMIT = 20; // wrong village codes one network may try per minute
+const NEW_SEAT_LIMIT = 20; // new players one network may add per minute: a full table on one Wi-Fi, plus retries
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -76,21 +77,33 @@ function clientOf(socket) {
 
 const connectionsByClient = new Map(); // client -> number of open sockets
 
+// Counts something per network over a one-minute window.
+function perMinuteLimit(limit) {
+  const entries = new Map(); // client -> { count, resetAt }
+  return {
+    exceeded(client) {
+      const entry = entries.get(client);
+      return !!entry && entry.count >= limit && Date.now() < entry.resetAt;
+    },
+    record(client) {
+      const now = Date.now();
+      let entry = entries.get(client);
+      if (!entry || now >= entry.resetAt) entries.set(client, (entry = { count: 0, resetAt: now + 60_000 }));
+      entry.count++;
+    },
+    prune(now) {
+      for (const [client, entry] of entries) if (now >= entry.resetAt) entries.delete(client);
+    },
+  };
+}
+
 // Wrong village codes, per network. Past the limit every lookup is refused until the minute is up,
 // whether or not the village exists, so the refusals themselves don't reveal anything.
-const wrongCodes = new Map(); // client -> { count, resetAt }
+const wrongCodes = perMinuteLimit(WRONG_CODE_LIMIT);
 
-function tooManyWrongCodes(client) {
-  const entry = wrongCodes.get(client);
-  return !!entry && entry.count >= WRONG_CODE_LIMIT && Date.now() < entry.resetAt;
-}
-
-function recordWrongCode(client) {
-  const now = Date.now();
-  let entry = wrongCodes.get(client);
-  if (!entry || now >= entry.resetAt) wrongCodes.set(client, (entry = { count: 0, resetAt: now + 60_000 }));
-  entry.count++;
-}
+// New seats, per network, so someone who has a village's code can't fill its lobby with fake
+// players as fast as the host removes them. Phones rejoining with their seat token don't count.
+const newSeats = perMinuteLimit(NEW_SEAT_LIMIT);
 
 // ---------- rooms ----------
 
@@ -305,13 +318,22 @@ io.on('connection', (socket) => {
     // A phone rejoining with its seat token already knows the code, so it isn't held up by guesses
     // made elsewhere on its network. Anyone else is, whether or not the code is real.
     const returning = !!target && !!token && target.game.players.some((p) => p.token === token);
-    if (!returning && tooManyWrongCodes(client)) return ack({ ok: false, error: 'Too many wrong codes. Wait a minute and try again.' });
+    if (!returning && wrongCodes.exceeded(client)) return ack({ ok: false, error: 'Too many wrong codes. Wait a minute and try again.' });
     if (!target) {
-      recordWrongCode(client);
+      wrongCodes.record(client);
       return ack({ ok: false, error: `There's no village with the code ${normalizeCode(code)}. Check the table screen.`, noRoom: true });
+    }
+    if (!returning) {
+      // One connection holds one seat. Without this, a single socket could keep joining under new
+      // names, leaving a fake player behind each time. A kicked player or a closed village frees it.
+      if (playerId && !playerRoom.closed && playerRoom.game.player(playerId)) {
+        return ack({ ok: false, error: 'This connection has already joined as a player.' });
+      }
+      if (newSeats.exceeded(client)) return ack({ ok: false, error: 'Too many players have joined from your network. Wait a minute and try again.' });
     }
     const result = target.game.join(name, token);
     if (result.ok) {
+      if (!returning) newSeats.record(client);
       unbindHost();
       unbindPlayer();
       playerRoom = target;
@@ -364,7 +386,8 @@ setInterval(() => {
 
 setInterval(() => {
   const now = Date.now();
-  for (const [client, entry] of wrongCodes) if (now >= entry.resetAt) wrongCodes.delete(client);
+  wrongCodes.prune(now);
+  newSeats.prune(now);
 }, 60_000);
 
 server.listen(PORT, '0.0.0.0', () => {
