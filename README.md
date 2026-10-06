@@ -2,9 +2,11 @@
 
 A ~25-minute social-deduction party game for 5–12 players. Everyone plays on their own phone, and one person runs the shared **table screen** (timer, Ghost messages, verdicts, reveal), either on a laptop or TV in the room or screenshared on a video call.
 
+**Play now:** open [GAME_URL/host](GAME_URL/host) on the shared screen.
+
 ## Running a game
 
-1. The host opens **`/host`** on the deployed site (or **http://localhost:3000/host** when running locally). This creates a new village with a six-letter code, such as `KXRPMW`.
+1. The host opens **[GAME_URL/host](GAME_URL/host)** (or **http://localhost:3000/host** when running locally). This creates a new village with a six-letter code, such as `KXRPMW`.
 2. Put that screen where everyone can see it, or share it on the video call.
 3. Players open the join link shown on the screen: scan the QR code in person, or paste the link into the call's chat. They can also go to `/play` and type the village code.
 4. The host joins on their own phone too, because the table screen is public.
@@ -18,6 +20,8 @@ If a phone refreshes or loses its connection, reopening the page in the same bro
 
 Several groups can play at once; each table screen runs its own village.
 
+The server sleeps after about 15 minutes without visitors, so the first visit afterwards can take up to a minute. Open the table screen a minute before you start.
+
 ## Running locally
 
 ```bash
@@ -26,29 +30,6 @@ npm start
 ```
 
 Open http://localhost:3000/host. Phones on the same Wi-Fi can join using the link the table screen shows (e.g. `http://192.168.x.x:3000/play/?room=KXRPMW`).
-
-## Deploying to Render
-
-1. Push this repository to GitHub.
-2. In Render, create a **Web Service** from the repository with:
-   - Build command: `npm install`
-   - Start command: `npm start`
-   - Instance type: **Free**
-3. Once it's live, open `https://<your-service>.onrender.com/host`.
-
-The server reads Render's `PORT` and `RENDER_EXTERNAL_URL` automatically, so join links and QR codes use the public address. To use a custom domain, set `PUBLIC_URL` (e.g. `https://witchtrial.example.com`).
-
-Things to know about the free tier:
-- The server sleeps after about 15 minutes without visitors, so the first visit afterwards can take up to a minute. Open the table screen a minute before you start.
-- Games live only in the server's memory. A redeploy or restart ends every game in progress, so don't push changes while people are playing.
-
-Limits that keep one visitor from filling the server or finding other people's villages (counted per network, so a group sharing Wi-Fi counts as one):
-- Up to 200 villages in total, and 5 open at once from any one network.
-- Up to 60 connections from any one network.
-- Up to 20 wrong village codes a minute from any one network. Past that, joining by code is refused until the minute is up, so live villages can't be found by guessing codes.
-- A village nobody is connected to closes after 10 minutes. One with no game in progress (sitting in the lobby or on the final reveal) closes after an hour, even if the table screen is still open.
-
-On Render the server reads each visitor's real address from Cloudflare's `CF-Connecting-IP` header. Behind a different proxy, set `CLIENT_IP_HEADER` to the header that proxy sets to the client's address; without a proxy, leave it unset.
 
 ## Game flow
 
@@ -105,7 +86,7 @@ npm run dev         # server with every timer shortened to 1/6
 npm run bots -- KXRPMW 5   # fill village KXRPMW with 5 bots that play randomly (join from your own browser too)
 ```
 
-The village code is shown on the table screen. To send bots to a deployed server, add its URL: `npm run bots -- KXRPMW 5 https://<your-service>.onrender.com`.
+The village code is shown on the table screen. To send bots to a deployed server, add its URL: `npm run bots -- KXRPMW 5 GAME_URL`.
 
 Each browser **tab** counts as a separate player, so you can also test by opening several tabs of `/play`.
 
@@ -148,3 +129,20 @@ witch-trial/
 │
 └── package.json           ← dependencies + commands
 ```
+
+## Server notes
+
+The live game runs on Render's free tier.
+
+Games live only in the server's memory. A redeploy or restart ends every game in progress, so don't push changes while people are playing.
+
+Join links and QR codes use the public address, which the server reads from Render's `RENDER_EXTERNAL_URL`. To use a custom domain, set `PUBLIC_URL` (e.g. `https://witchtrial.example.com`).
+
+The server reads each visitor's real address from Cloudflare's `CF-Connecting-IP` header, which Render sets. Behind a different proxy, set `CLIENT_IP_HEADER` to the header that proxy sets to the client's address; without a proxy, leave it unset.
+
+Limits that keep one visitor from filling the server or finding other people's villages (counted per network, so a group sharing Wi-Fi counts as one):
+- Up to 200 villages in total, and 5 open at once from any one network.
+- Up to 60 connections from any one network.
+- Up to 20 wrong village codes a minute from any one network. Past that, joining by code is refused until the minute is up, so live villages can't be found by guessing codes.
+- Up to 20 new players a minute from any one network, and one player per connection.
+- A village nobody is connected to closes after 10 minutes. One with no game in progress (sitting in the lobby or on the final reveal) closes after an hour, even if the table screen is still open.
