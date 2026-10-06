@@ -1,0 +1,94 @@
+/* Design tokens: the only place colours and fonts are defined.
+ * The rules for using them (roles, proportions, contrast) are in design.md.
+ * styles.css only refers to the semantic --color-* names below.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Palette: darks (Dracula greys, tinted violet) */
+  --black: oklch(14.9% 0.011 294);       /* #0b0a0f */
+  --gray-950: oklch(18.2% 0.014 291);    /* #121118 */
+  --gray-900: oklch(25.5% 0.019 280);    /* #21222c */
+  --gray-800: oklch(28.8% 0.022 278);    /* #282a36 */
+  --gray-700: oklch(36.5% 0.028 279);    /* #3b3d4d */
+  --gray-400: oklch(72.6% 0.030 294);    /* #a7a3b8 */
+  --cream: oklch(92.5% 0.016 59);        /* #efe4dc */
+
+  /* Palette: purples, the supernatural */
+  --purple-950: oklch(22.7% 0.115 296);  /* #24044a */
+  --purple-700: oklch(39.6% 0.232 283);  /* #4403bb ultraviolet */
+  --purple-500: oklch(54.9% 0.239 299);  /* #893ae5 violet */
+  --purple-300: oklch(74.3% 0.149 302);  /* #be93f9 lilac */
+  --purple-200: oklch(77.1% 0.149 310);  /* #d298fb foil */
+
+  /* Palette: oranges, fire and the trial */
+  --orange-950: oklch(26.1% 0.098 30);   /* #490603 oxblood */
+  --orange-800: oklch(43.2% 0.165 31);   /* #961503 */
+  --orange-600: oklch(57% 0.207 31);     /* #d62d14 ember: fills and large type only */
+  --orange-500: oklch(68.6% 0.174 34);   /* #f26a4b ember for text */
+  --orange-400: oklch(70.1% 0.158 62);   /* #e38411 amber */
+
+  /* Semantic roles */
+  --color-bg: var(--gray-950);                      /* page background, the darkness */
+  --color-surface: var(--gray-900);                 /* panels */
+  --color-text: var(--cream);                       /* primary text */
+  --color-text-muted: var(--gray-400);              /* secondary text */
+  --color-line: var(--gray-700);                    /* rules, borders (never text) */
+  --color-scrim: oklch(14.9% 0.011 294 / 0.78);     /* --black, behind text laid over art */
+  --color-glass-top: oklch(92.5% 0.016 59 / 0.14);  /* --cream, frosted card sheen at the top */
+  --color-glass-bottom: oklch(92.5% 0.016 59 / 0.05); /* --cream, fading toward the bottom */
+  --color-glass-edge: oklch(92.5% 0.016 59 / 0.3);  /* the card's thin bright rim */
+  --color-glass-shadow: oklch(14.9% 0.011 294 / 0.85); /* --black, the deep shadow under a card */
+  --color-button-bg: var(--orange-400);             /* primary action: amber */
+  --color-button-text: var(--black);
+  --color-claim: var(--purple-300);                 /* clues and claims: lilac */
+  --color-glow: var(--purple-700);                  /* supernatural glows (backgrounds only) */
+  --color-ornament: var(--purple-200);              /* thin foil line art */
+  --color-condemn: var(--orange-500);               /* condemnation copy */
+  --color-condemn-strong: var(--orange-600);        /* condemnation fills, large display */
+  --color-fire: var(--orange-400);                  /* firelight glows */
+  --color-doc-bg: var(--cream);                     /* the accusation document */
+  --color-doc-text: var(--black);
+  --color-doc-accent: var(--purple-700);            /* ultraviolet ink on the document */
+  --color-placeholder: var(--gray-900);
+  --color-placeholder-text: var(--gray-400);
+  --color-focus: var(--purple-300);
+
+  /* Type */
+  --font-display: 'IM Fell English', 'Iowan Old Style', Georgia, serif;
+  --font-body: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: clamp(1.25rem, 1.1rem + 0.8vw, 1.625rem);
+  --text-2xl: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+  --text-3xl: clamp(2.25rem, 1.4rem + 4vw, 4.5rem);
+  --text-title: clamp(3rem, 1.6rem + 7vw, 7.5rem);
+
+  /* Space (4pt) */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
+  --gutter: clamp(1rem, 4vw, 4rem);
+
+  --radius: 4px;
+  --radius-glass: 26px;
+  --rule: 1px;
+  --glass-blur: 22px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+}
