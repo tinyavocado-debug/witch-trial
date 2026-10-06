@@ -1,7 +1,2 @@
 node_modules/
 .DS_Store
-
-# Landing page working files: raw Runway takes, extracted frames, the stitched preview.
-# Only the prompts are kept.
-landing_page/video-work/*
-!landing_page/video-work/clips.md
